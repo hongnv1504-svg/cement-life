@@ -125,12 +125,20 @@ export default function ConfiguratorPage() {
   const [selectedTopping, setSelectedTopping] = useState<OptionItem>(
     mockData.toppings[0]
   );
+  const [currentStep, setCurrentStep] = useState(1);
 
   const totalPrice = useMemo(
     () => selectedBase.price + selectedPlant.price + selectedTopping.price,
     [selectedBase, selectedPlant, selectedTopping]
   );
   const previewSrc = `/${selectedBase.id}-${selectedPlant.id}.jpg`;
+  const stepCircle = (n: number) =>
+    "flex h-6 w-6 items-center justify-center rounded-full border " +
+    (n === currentStep
+      ? "border-black bg-black text-white"
+      : n < currentStep
+      ? "border-stone-900 bg-white text-stone-900"
+      : "border-stone-300 bg-white text-stone-400");
 
   return (
     <div className="min-h-screen w-full bg-white font-sans">
@@ -161,70 +169,71 @@ export default function ConfiguratorPage() {
             <div className="mb-8">
               <div className="flex items-center gap-3 text-xs text-stone-700">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-900">
-                    1
-                  </span>
+                  <span className={stepCircle(1)}>1</span>
                   <span>Chậu</span>
                 </div>
                 <span className="text-stone-300">→</span>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-900">
-                    2
-                  </span>
+                  <span className={stepCircle(2)}>2</span>
                   <span>Cây</span>
                 </div>
                 <span className="text-stone-300">→</span>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-900">
-                    3
-                  </span>
+                  <span className={stepCircle(3)}>3</span>
                   <span>Sỏi</span>
                 </div>
               </div>
             </div>
 
-            <div className="mb-10">
-              <div className="mb-3 font-serif text-xl text-stone-900">Chọn Chậu</div>
-              <div className="grid grid-cols-2 gap-4">
-                {mockData.bases.map((b) => (
-                  <OptionCard
-                    key={b.id}
-                    item={b}
-                    selected={selectedBase.id === b.id}
-                    onSelect={() => setSelectedBase(b)}
-                  />
-                ))}
+            {currentStep === 1 && (
+              <div className="mb-24">
+                <div className="mb-3 font-serif text-xl text-stone-900">Chọn Chậu</div>
+                <div className="grid grid-cols-2 gap-4">
+                  {mockData.bases.map((b) => (
+                    <OptionCard
+                      key={b.id}
+                      item={b}
+                      selected={selectedBase.id === b.id}
+                      onSelect={() => setSelectedBase(b)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="mb-10">
-              <div className="mb-3 font-serif text-xl text-stone-900">Chọn Cây</div>
-              <div className="grid grid-cols-2 gap-4">
-                {mockData.plants.map((plant) => (
-                  <OptionCard
-                    key={plant.id}
-                    item={plant}
-                    selected={selectedPlant.id === plant.id}
-                    onSelect={() => setSelectedPlant(plant)}
-                  />
-                ))}
+            {currentStep === 2 && (
+              <div className="mb-24">
+                <div className="mb-3 font-serif text-xl text-stone-900">Chọn Cây</div>
+                <div className="grid grid-cols-2 gap-4">
+                  {mockData.plants.map((plant) => (
+                    <OptionCard
+                      key={plant.id}
+                      item={plant}
+                      selected={selectedPlant.id === plant.id}
+                      onSelect={() => setSelectedPlant(plant)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="mb-24">
-              <div className="mb-3 font-serif text-xl text-stone-900">Chọn Sỏi</div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {mockData.toppings.map((t) => (
-                  <OptionCard
-                    key={t.id}
-                    item={t}
-                    selected={selectedTopping.id === t.id}
-                    onSelect={() => setSelectedTopping(t)}
-                    showDescription
-                  />
-                ))}
+            {currentStep === 3 && (
+              <div className="mb-24">
+                <div className="mb-3 font-serif text-xl text-stone-900">Chọn Sỏi</div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {mockData.toppings.map((t) => (
+                    <OptionCard
+                      key={t.id}
+                      item={t}
+                      selected={selectedTopping.id === t.id}
+                      onSelect={() => setSelectedTopping(t)}
+                      showDescription
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
             <div className="mb-24 rounded-xl border border-stone-200 bg-stone-50 p-4">
               <div className="font-serif text-lg text-stone-900">Tóm tắt lựa chọn</div>
               <div className="mt-2 text-sm text-stone-700">
@@ -235,10 +244,46 @@ export default function ConfiguratorPage() {
             </div>
           </div>
           <div className="sticky bottom-0 border-t border-stone-200 bg-white">
-            <div className="mx-auto max-w-2xl px-6 py-6 md:px-8">
-              <button className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800">
-                Complete My Masterpiece
-              </button>
+            <div className="mx-auto flex max-w-2xl items-center gap-3 px-6 py-6 md:px-8">
+              {currentStep === 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentStep(2)}
+                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                  >
+                    Tiếp: Chọn Cây →
+                  </button>
+                </>
+              )}
+              {currentStep === 2 && (
+                <>
+                  <button
+                    onClick={() => setCurrentStep(1)}
+                    className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
+                  >
+                    ← Quay lại
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(3)}
+                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                  >
+                    Tiếp: Chọn Sỏi →
+                  </button>
+                </>
+              )}
+              {currentStep === 3 && (
+                <>
+                  <button
+                    onClick={() => setCurrentStep(2)}
+                    className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
+                  >
+                    ← Quay lại
+                  </button>
+                  <button className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800">
+                    Hoàn tất tác phẩm của tôi
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
