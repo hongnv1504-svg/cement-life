@@ -421,34 +421,12 @@ export default function ConfiguratorPage() {
                   >
                     ← Quay lại
                   </button>
-                  <div className="flex w-full items-center gap-4">
-                    <button
-                      onClick={() => {
-                        const item: CartItem = {
-                          base: selectedBase,
-                          plant: selectedPlant,
-                          topping: selectedTopping,
-                          total: totalPrice,
-                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                        };
-                        setCart((prev) => [...prev, item]);
-                        alert("Đã thêm vào giỏ hàng thành công!");
-                        setCurrentStep(1);
-                        setSelectedBase(mockData.bases[0]);
-                        setSelectedPlant(mockData.plants[0]);
-                        setSelectedTopping(mockData.toppings[0]);
-                      }}
-                      className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
-                    >
-                      Cho vào giỏ
-                    </button>
-                    <button
-                      onClick={() => setCurrentStep(4)}
-                      className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
-                    >
-                      Tiếp: Đặt tên →
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setCurrentStep(4)}
+                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                  >
+                    Tiếp: Đặt tên →
+                  </button>
                 </>
               )}
               {currentStep === 4 && (
@@ -475,7 +453,7 @@ export default function ConfiguratorPage() {
                     }}
                     className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
                   >
-                    Hoàn tất & Thanh toán →
+                    Tính tiền →
                   </button>
                 </>
               )}
