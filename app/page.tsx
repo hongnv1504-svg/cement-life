@@ -109,7 +109,7 @@ function OptionCard({
         <div className="flex flex-col">
           <span className="text-sm font-medium text-stone-900">{item.name}</span>
           {showDescription ? (
-            <span className="mt-1 text-xs text-stone-600">{item.description}</span>
+            <span className="mt-1 text-xs text-gray-500">{item.description}</span>
           ) : null}
         </div>
         <span className="text-sm text-stone-700">+ ${item.price}</span>
@@ -303,16 +303,17 @@ export default function ConfiguratorPage() {
                 <div className="mb-3 font-serif text-xl text-stone-900">Chọn Cây</div>
                 <div className="grid grid-cols-2 gap-4">
                   {mockData.plants.map((plant) => (
-                    <OptionCard
-                      key={plant.id}
-                      item={plant}
-                      selected={selectedPlant.id === plant.id}
-                      onSelect={() => setSelectedPlant(plant)}
-                    />
-                  ))}
-                </div>
+                  <OptionCard
+                    key={plant.id}
+                    item={plant}
+                    selected={selectedPlant.id === plant.id}
+                    onSelect={() => setSelectedPlant(plant)}
+                    showDescription
+                  />
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
             {currentStep === 3 && (
               <div className="mb-24">
@@ -396,7 +397,7 @@ export default function ConfiguratorPage() {
                     }}
                     className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
                   >
-                    Thêm vào giỏ hàng
+                    Coi thêm chậu
                   </button>
                 </>
               )}
@@ -464,7 +465,7 @@ export default function ConfiguratorPage() {
                   }}
                   className="rounded-full bg-black px-4 py-2 text-white transition hover:bg-stone-800"
                 >
-                  Thanh toán
+                  Tính tiền
                 </button>
               </div>
             </div>
