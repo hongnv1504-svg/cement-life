@@ -482,23 +482,15 @@ export default function ConfiguratorPage() {
               <div className="text-stone-800">
                 Tổng cộng: {formatVND(cart.reduce((sum, c) => sum + c.total, 0))}
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCart([])}
-                  className="rounded-full border border-stone-300 bg-white px-4 py-2 text-black transition hover:bg-stone-100"
-                >
-                  Xóa giỏ hàng
-                </button>
-                <button
-                  onClick={() => {
-                    setIsCartOpen(false);
-                    setIsCheckoutModalOpen(true);
-                  }}
-                  className="rounded-full bg-black px-4 py-2 text-white transition hover:bg-stone-800"
-                >
-                  Tính tiền
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setIsCartOpen(false);
+                  setIsCheckoutModalOpen(true);
+                }}
+                className="rounded-full bg-black px-4 py-2 text-white transition hover:bg-stone-800"
+              >
+                Tính tiền
+              </button>
             </div>
           </div>
         </div>
