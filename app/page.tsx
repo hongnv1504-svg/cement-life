@@ -132,13 +132,22 @@ export default function ConfiguratorPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [specificAddress, setSpecificAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK_TRANSFER">("COD");
   const [provinces, setProvinces] = useState<Array<{ id: string | number; name: string }>>([]);
   const [districts, setDistricts] = useState<Array<{ id: string | number; name: string }>>([]);
   const [wards, setWards] = useState<Array<{ id: string | number; name: string }>>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState<string | number | undefined>(undefined);
   const [selectedDistrictId, setSelectedDistrictId] = useState<string | number | undefined>(undefined);
   const [selectedWardId, setSelectedWardId] = useState<string | number | undefined>(undefined);
+  type CartItem = {
+    base: OptionItem;
+    plant: OptionItem;
+    topping: OptionItem;
+    total: number;
+    preview_image: string;
+  };
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   type RawLocation = {
     id?: string | number;
     ID?: string | number;
@@ -245,6 +254,14 @@ export default function ConfiguratorPage() {
           <div className="mx-auto max-w-2xl px-6 py-8 md:px-8 md:py-12">
             <div className="mb-6 text-stone-900">
               <div className="text-2xl font-serif">Cement Life</div>
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-900 hover:bg-stone-100"
+                >
+                  Giỏ hàng ({cart.length})
+                </button>
+              </div>
             </div>
             <div className="mb-8">
               <div className="flex items-center gap-3 text-xs text-stone-700">
@@ -362,10 +379,24 @@ export default function ConfiguratorPage() {
                     ← Quay lại
                   </button>
                   <button
-                    onClick={() => setIsCheckoutModalOpen(true)}
+                    onClick={() => {
+                      const item: CartItem = {
+                        base: selectedBase,
+                        plant: selectedPlant,
+                        topping: selectedTopping,
+                        total: totalPrice,
+                        preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                      };
+                      setCart((prev) => [...prev, item]);
+                      alert("Đã thêm vào giỏ hàng thành công!");
+                      setCurrentStep(1);
+                      setSelectedBase(mockData.bases[0]);
+                      setSelectedPlant(mockData.plants[0]);
+                      setSelectedTopping(mockData.toppings[0]);
+                    }}
                     className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
                   >
-                    Hoàn tất tác phẩm của tôi
+                    Thêm vào giỏ hàng
                   </button>
                 </>
               )}
@@ -373,6 +404,73 @@ export default function ConfiguratorPage() {
           </div>
         </div>
       </div>
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setIsCartOpen(false)} />
+          <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="font-serif text-xl text-stone-900">Giỏ hàng của bạn</div>
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-900 hover:bg-stone-100"
+              >
+                Đóng
+              </button>
+            </div>
+            <div className="max-h-[50vh] overflow-auto">
+              {cart.length === 0 ? (
+                <div className="text-sm text-stone-700">Giỏ hàng trống.</div>
+              ) : (
+                <div className="space-y-3">
+                  {cart.map((ci, idx) => (
+                    <div
+                      key={`ci-${idx}`}
+                      className="flex items-center justify-between rounded-lg border border-stone-200 p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={ci.preview_image}
+                          alt={`${ci.base.name} + ${ci.plant.name}`}
+                          className="h-16 w-16 rounded-md object-cover"
+                        />
+                        <div className="text-sm text-stone-800">
+                          <div className="font-medium">{ci.base.name}</div>
+                          <div>{ci.plant.name}</div>
+                          <div>{ci.topping.name}</div>
+                        </div>
+                      </div>
+                      <div className="text-sm font-medium text-stone-900">${ci.total}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-stone-800">
+                Tổng cộng: $
+                {cart.reduce((sum, c) => sum + c.total, 0)}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCart([])}
+                  className="rounded-full border border-stone-300 bg-white px-4 py-2 text-black transition hover:bg-stone-100"
+                >
+                  Xóa giỏ hàng
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    setIsCheckoutModalOpen(true);
+                  }}
+                  className="rounded-full bg-black px-4 py-2 text-white transition hover:bg-stone-800"
+                >
+                  Thanh toán
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {isCheckoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -557,12 +655,24 @@ export default function ConfiguratorPage() {
                       <input
                         type="radio"
                         name="payment"
-                        checked={paymentMethod === "BANK"}
-                        onChange={() => setPaymentMethod("BANK")}
+                        checked={paymentMethod === "BANK_TRANSFER"}
+                        onChange={() => setPaymentMethod("BANK_TRANSFER")}
                       />
-                      Chuyển khoản
+                      Chuyển khoản ngân hàng
                     </label>
                   </div>
+                  {paymentMethod === "BANK_TRANSFER" && (
+                    <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-800">
+                      <div className="font-medium text-stone-900">Thông tin chuyển khoản (MB Bank)</div>
+                      <div>Ngân hàng: MB Bank (Ngân hàng Quân đội)</div>
+                      <div>Chủ tài khoản: Cement Life</div>
+                      <div>Số tài khoản: 123456789</div>
+                      <div>Chi nhánh: TP. Hồ Chí Minh</div>
+                      <div className="mt-2 text-stone-600">
+                        Vui lòng ghi nội dung chuyển khoản: Họ tên + SĐT
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="mt-5 flex items-center gap-2">
