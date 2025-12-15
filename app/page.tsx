@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 type OptionItem = {
   id: string;
@@ -126,6 +127,12 @@ export default function ConfiguratorPage() {
     mockData.toppings[0]
   );
   const [currentStep, setCurrentStep] = useState(1);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const totalPrice = useMemo(
     () => selectedBase.price + selectedPlant.price + selectedTopping.price,
@@ -288,7 +295,10 @@ export default function ConfiguratorPage() {
                   >
                     ← Quay lại
                   </button>
-                  <button className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800">
+                  <button
+                    onClick={() => setIsCheckoutModalOpen(true)}
+                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                  >
                     Hoàn tất tác phẩm của tôi
                   </button>
                 </>
@@ -297,6 +307,117 @@ export default function ConfiguratorPage() {
           </div>
         </div>
       </div>
+      {isCheckoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => !submitting && setIsCheckoutModalOpen(false)}
+          />
+          <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 text-center font-serif text-xl text-stone-900">
+              Finalize Your Order
+            </div>
+            <div className="mb-4 text-center text-stone-700">
+              Tổng tiền: ${totalPrice}
+            </div>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!customerName || !customerPhone || !customerEmail || !customerAddress) {
+                  alert("Vui lòng điền đầy đủ thông tin.");
+                  return;
+                }
+                setSubmitting(true);
+                const orderDetails = {
+                  base: { id: selectedBase.id, name: selectedBase.name, price: selectedBase.price },
+                  plant: { id: selectedPlant.id, name: selectedPlant.name, price: selectedPlant.price },
+                  topping: { id: selectedTopping.id, name: selectedTopping.name, price: selectedTopping.price },
+                  preview_image:
+                    currentStep === 1
+                      ? `/${selectedBase.id}.jpg`
+                      : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                };
+                const { data, error } = await supabase
+                  .from("orders")
+                  .insert({
+                    customer_name: customerName,
+                    customer_email: customerEmail,
+                    customer_phone: customerPhone,
+                    customer_address: customerAddress,
+                    total_amount: totalPrice,
+                    order_details: orderDetails,
+                    status: "PENDING",
+                  })
+                  .select();
+                setSubmitting(false);
+                if (error) {
+                  alert(`Đặt hàng thất bại: ${error.message}`);
+                  return;
+                }
+                const id =
+                  Array.isArray(data) && data.length > 0
+                    ? (data[0] as { id?: number | string }).id
+                    : undefined;
+                alert(id ? `Thành công! Đơn hàng #${id} đã xác nhận.` : "Thành công! Đơn hàng đã xác nhận.");
+                setIsCheckoutModalOpen(false);
+                setCurrentStep(1);
+              }}
+            >
+              <div className="grid grid-cols-1 gap-3">
+                <input
+                  type="text"
+                  required
+                  placeholder="Họ và tên"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <input
+                  type="tel"
+                  required
+                  placeholder="Số điện thoại"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <input
+                  type="email"
+                  required
+                  placeholder="Email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <textarea
+                  required
+                  placeholder="Địa chỉ giao hàng"
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  rows={3}
+                />
+              </div>
+              <div className="mt-5 flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => setIsCheckoutModalOpen(false)}
+                  className="w-full rounded-full border border-stone-300 bg-white py-3 text-black transition hover:bg-stone-100 disabled:opacity-60"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full rounded-full bg-black py-3 text-white transition hover:bg-stone-800 disabled:opacity-60"
+                >
+                  {submitting ? "Đang xử lý..." : "Xác nhận đơn hàng"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
