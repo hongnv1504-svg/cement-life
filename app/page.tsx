@@ -399,7 +399,7 @@ export default function ConfiguratorPage() {
                       }}
                       className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
                     >
-                      Coi thêm chậu
+                      Cho vào giỏ
                     </button>
                     <button
                       onClick={() => {
