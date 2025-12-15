@@ -387,13 +387,9 @@ export default function ConfiguratorPage() {
                     className="w-full rounded-lg border border-stone-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-stone-800"
                   />
                   <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
-                    <div className="mb-2 text-center text-lg font-semibold text-stone-900">
-                      {creationName || "Tên tác phẩm của bạn"}
-                    </div>
                     <div className="mb-2 text-center text-sm text-stone-700">
-                      {`${creationName || "..."} , đã sẵn sàng.`}
+                      {`${creationName || "..."}, đã sẵn sàng.`}
                     </div>
-                    <div className="mb-2 text-center text-sm text-stone-700">Chậu cây của bạn</div>
                     <img
                       src={`/${selectedBase.id}-${selectedPlant.id}.jpg`}
                       alt={`${selectedBase.name} + ${selectedPlant.name}`}
@@ -566,7 +562,7 @@ export default function ConfiguratorPage() {
           />
           <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-4 text-center font-serif text-xl text-stone-900">
-              Finalize Your Order
+              Hoàn tất Đơn hàng
             </div>
             <div className="mb-4 text-center text-stone-700">
               Tổng tiền: {formatVND(totalPrice)}
