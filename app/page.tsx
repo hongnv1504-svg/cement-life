@@ -683,10 +683,10 @@ export default function ConfiguratorPage() {
                   </div>
                   {paymentMethod === "BANK_TRANSFER" && (
                     <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-800">
-                      <div className="font-medium text-stone-900">Thông tin chuyển khoản (MB Bank)</div>
-                      <div>Ngân hàng: MB Bank (Ngân hàng Quân đội)</div>
-                      <div>Chủ tài khoản: Cement Life</div>
-                      <div>Số tài khoản: 123456789</div>
+                      <div className="font-medium text-stone-900">Thông tin chuyển khoản (Techcombank)</div>
+                      <div>Ngân hàng: Techcombank </div>
+                      <div>Chủ tài khoản: NGO VAN HONG/div>
+                      <div>Số tài khoản: 19033210412014</div>
                       <div>Chi nhánh: TP. Hồ Chí Minh</div>
                       <div className="mt-2 text-stone-600">
                         Vui lòng ghi nội dung chuyển khoản: Họ tên + SĐT
