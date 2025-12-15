@@ -131,7 +131,73 @@ export default function ConfiguratorPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
+  const [specificAddress, setSpecificAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK">("COD");
+  const [provinces, setProvinces] = useState<Array<{ id: string | number; name: string }>>([]);
+  const [districts, setDistricts] = useState<Array<{ id: string | number; name: string }>>([]);
+  const [wards, setWards] = useState<Array<{ id: string | number; name: string }>>([]);
+  const [selectedProvinceId, setSelectedProvinceId] = useState<string | number | undefined>(undefined);
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string | number | undefined>(undefined);
+  const [selectedWardId, setSelectedWardId] = useState<string | number | undefined>(undefined);
+  type RawLocation = {
+    id?: string | number;
+    ID?: string | number;
+    code?: string | number;
+    matp?: string | number;
+    maqh?: string | number;
+    xaid?: string | number;
+    name?: string;
+    NAME?: string;
+    full_name?: string;
+    ten?: string;
+    Ten?: string;
+    title?: string;
+  };
+  type RawContainer = { data?: RawLocation[] };
+  const isRawContainer = (x: unknown): x is RawContainer =>
+    typeof x === "object" && x !== null && "data" in (x as Record<string, unknown>);
+  const isRawArray = (x: unknown): x is RawLocation[] => Array.isArray(x);
+  const normalizeItems = (items: unknown): Array<{ id: string | number; name: string }> => {
+    const arr: RawLocation[] = isRawArray(items) ? items : isRawContainer(items) ? items.data ?? [] : [];
+    return arr
+      .map((it) => {
+        const id = it.id ?? it.ID ?? it.code ?? it.matp ?? it.maqh ?? it.xaid;
+        const name = it.name ?? it.NAME ?? it.full_name ?? it.ten ?? it.Ten ?? it.title;
+        if (id == null || name == null) return undefined;
+        return { id, name: String(name) };
+      })
+      .filter((v): v is { id: string | number; name: string } => Boolean(v));
+  };
+  const fetchJSON = async (url: string): Promise<unknown> => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  };
+  const loadProvinces = async () => {
+    let data = await fetchJSON("https://esgoo.net/api-tinhthanh/1/0.htm");
+    if (!data) data = await fetchJSON("https://esgoo.net/api-tinhthanh?type=province");
+    setProvinces(normalizeItems(data));
+  };
+  const loadDistricts = async (provinceId: string | number) => {
+    let data = await fetchJSON(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`);
+    if (!data) data = await fetchJSON(`https://esgoo.net/api-tinhthanh?type=district&parent=${provinceId}`);
+    setDistricts(normalizeItems(data));
+  };
+  const loadWards = async (districtId: string | number) => {
+    let data = await fetchJSON(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`);
+    if (!data) data = await fetchJSON(`https://esgoo.net/api-tinhthanh?type=ward&parent=${districtId}`);
+    setWards(normalizeItems(data));
+  };
+  if (typeof window !== "undefined") {
+    // Load province list when opening modal
+    if (isCheckoutModalOpen && provinces.length === 0) {
+      void loadProvinces();
+    }
+  }
   const [submitting, setSubmitting] = useState(false);
 
   const totalPrice = useMemo(
@@ -323,7 +389,18 @@ export default function ConfiguratorPage() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!customerName || !customerPhone || !customerEmail || !customerAddress) {
+                const provinceName = provinces.find((p) => p.id == selectedProvinceId)?.name;
+                const districtName = districts.find((d) => d.id == selectedDistrictId)?.name;
+                const wardName = wards.find((w) => w.id == selectedWardId)?.name;
+                if (
+                  !customerName ||
+                  !customerPhone ||
+                  !customerEmail ||
+                  !specificAddress ||
+                  !provinceName ||
+                  !districtName ||
+                  !wardName
+                ) {
                   alert("Vui lòng điền đầy đủ thông tin.");
                   return;
                 }
@@ -336,7 +413,9 @@ export default function ConfiguratorPage() {
                     currentStep === 1
                       ? `/${selectedBase.id}.jpg`
                       : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                  payment_method: paymentMethod,
                 };
+                const customerAddress = `${specificAddress}, ${wardName}, ${districtName}, ${provinceName}`;
                 const { data, error } = await supabase
                   .from("orders")
                   .insert({
@@ -372,30 +451,119 @@ export default function ConfiguratorPage() {
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input
+                    type="email"
+                    required
+                    placeholder="Email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  />
+                  <input
+                    type="tel"
+                    required
+                    placeholder="Số điện thoại"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  />
+                </div>
                 <input
-                  type="tel"
+                  type="text"
                   required
-                  placeholder="Số điện thoại"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="Địa chỉ cụ thể (Số nhà, Tên đường)"
+                  value={specificAddress}
+                  onChange={(e) => setSpecificAddress(e.target.value)}
                   className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
-                <input
-                  type="email"
-                  required
-                  placeholder="Email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
-                />
-                <textarea
-                  required
-                  placeholder="Địa chỉ giao hàng"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
-                  rows={3}
-                />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <select
+                    required
+                    value={selectedProvinceId ?? ""}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedProvinceId(id);
+                      setSelectedDistrictId(undefined);
+                      setSelectedWardId(undefined);
+                      setDistricts([]);
+                      setWards([]);
+                      if (id) {
+                        void loadDistricts(id);
+                      }
+                    }}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  >
+                    <option value="">Chọn tỉnh / thành</option>
+                    {provinces.map((p) => (
+                      <option key={`p-${p.id}`} value={String(p.id)}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    required
+                    value={selectedDistrictId ?? ""}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedDistrictId(id);
+                      setSelectedWardId(undefined);
+                      setWards([]);
+                      if (id) {
+                        void loadWards(id);
+                      }
+                    }}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    disabled={!selectedProvinceId}
+                  >
+                    <option value="">Chọn quận / huyện</option>
+                    {districts.map((d) => (
+                      <option key={`d-${d.id}`} value={String(d.id)}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    required
+                    value={selectedWardId ?? ""}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedWardId(id);
+                    }}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    disabled={!selectedDistrictId}
+                  >
+                    <option value="">Chọn phường / xã</option>
+                    {wards.map((w) => (
+                      <option key={`w-${w.id}`} value={String(w.id)}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mt-2">
+                  <div className="mb-2 text-sm font-medium text-stone-900">Phương thức thanh toán</div>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm text-stone-800">
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === "COD"}
+                        onChange={() => setPaymentMethod("COD")}
+                      />
+                      Thanh toán khi nhận hàng (COD)
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-stone-800">
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === "BANK"}
+                        onChange={() => setPaymentMethod("BANK")}
+                      />
+                      Chuyển khoản
+                    </label>
+                  </div>
+                </div>
               </div>
               <div className="mt-5 flex items-center gap-2">
                 <button
