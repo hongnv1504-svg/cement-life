@@ -151,6 +151,7 @@ export default function ConfiguratorPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [creationName, setCreationName] = useState("");
+  const [showLanding, setShowLanding] = useState(true);
   const handleRemoveItem = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
@@ -235,6 +236,37 @@ export default function ConfiguratorPage() {
       ? "border-stone-900 bg-white text-stone-900"
       : "border-stone-300 bg-white text-stone-400");
 
+  if (showLanding) {
+    return (
+      <div className="relative min-h-screen w-full">
+        <img
+          src="/images/background/plant_collage.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 flex min-h-screen items-center justify-center">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <h1 className="text-3xl font-serif text-white md:text-5xl">
+              Tạo ra mầm sống mang dấu ấn riêng của bạn
+            </h1>
+            <p className="mt-4 text-stone-200 md:text-lg">
+              Bắt đầu hành trình thiết kế chậu cây của riêng bạn.
+            </p>
+            <button
+              onClick={() => {
+                setShowLanding(false);
+                setCurrentStep(1);
+              }}
+              className="mt-8 rounded-full bg-black px-6 py-3 text-white transition hover:bg-stone-800 md:px-8 md:py-4 md:text-lg"
+            >
+              Bắt đầu Thiết kế →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen w-full bg-white font-sans">
       <div className="lg:grid lg:grid-cols-2">
