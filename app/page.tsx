@@ -149,6 +149,7 @@ export default function ConfiguratorPage() {
   };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [creationName, setCreationName] = useState("");
   const handleRemoveItem = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
@@ -283,6 +284,11 @@ export default function ConfiguratorPage() {
                   <span className={stepCircle(3)}>3</span>
                   <span>Sỏi</span>
                 </div>
+                <span className="text-stone-300">→</span>
+                <div className="flex items-center gap-2">
+                  <span className={stepCircle(4)}>4</span>
+                  <span>Tên</span>
+                </div>
               </div>
             </div>
 
@@ -332,6 +338,37 @@ export default function ConfiguratorPage() {
                       showDescription
                     />
                   ))}
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div className="mb-24">
+                <div className="mb-3 font-serif text-xl text-stone-900">Bước Cuối Cùng: Đặt Tên Tác Phẩm!</div>
+                <div className="grid gap-4">
+                  <input
+                    type="text"
+                    placeholder="Tên gọi yêu thích của bạn là gì? (Ví dụ: Sen Đá Vũ Trụ, Vườn Trên Bàn)"
+                    value={creationName}
+                    onChange={(e) => setCreationName(e.target.value)}
+                    className="w-full rounded-lg border border-stone-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  />
+                  <div className="text-xs text-stone-600">
+                    (Tên này sẽ được ghi lên Thẻ Gắn Kèm để đánh dấu tác phẩm sáng tạo của riêng bạn.)
+                  </div>
+                  <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
+                    <div className="mb-2 text-center text-lg font-semibold text-stone-900">
+                      {creationName || "Tên tác phẩm của bạn"}
+                    </div>
+                    <div className="mb-2 text-center text-sm text-stone-700">
+                      {`Tuyệt vời! ${selectedBase.name} tinh tế, mang tên '${creationName || "..." }', đã sẵn sàng để trở thành của bạn.`}
+                    </div>
+                    <img
+                      src={`/${selectedBase.id}-${selectedPlant.id}.jpg`}
+                      alt={`${selectedBase.name} + ${selectedPlant.name}`}
+                      className="w-full rounded-lg border border-stone-200 object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -405,23 +442,30 @@ export default function ConfiguratorPage() {
                       Cho vào giỏ
                     </button>
                     <button
-                      onClick={() => {
-                        const item: CartItem = {
-                          base: selectedBase,
-                          plant: selectedPlant,
-                          topping: selectedTopping,
-                          total: totalPrice,
-                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                        };
-                        setCart((prev) => [...prev, item]);
-                        setIsCartOpen(false);
-                        setIsCheckoutModalOpen(true);
-                      }}
+                      onClick={() => setCurrentStep(4)}
                       className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
                     >
-                      Tính tiền
+                      Tiếp: Đặt tên →
                     </button>
                   </div>
+                </>
+              )}
+              {currentStep === 4 && (
+                <>
+                  <button
+                    onClick={() => setCurrentStep(3)}
+                    className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
+                  >
+                    ← Quay lại
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCheckoutModalOpen(true);
+                    }}
+                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                  >
+                    Hoàn tất Thiết kế (Chuyển sang Thanh toán)
+                  </button>
                 </>
               )}
             </div>
@@ -536,6 +580,7 @@ export default function ConfiguratorPage() {
                       ? `/${selectedBase.id}.jpg`
                       : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
                   payment_method: paymentMethod,
+                  creation_name: creationName,
                 };
                 const customerAddress = `${specificAddress}, ${wardName}, ${districtName}, ${provinceName}`;
                 const { data, error } = await supabase
