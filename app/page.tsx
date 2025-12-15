@@ -241,14 +241,16 @@ export default function ConfiguratorPage() {
               </div>
             )}
 
-            <div className="mb-24 rounded-xl border border-stone-200 bg-stone-50 p-4">
-              <div className="font-serif text-lg text-stone-900">Tóm tắt lựa chọn</div>
-              <div className="mt-2 text-sm text-stone-700">
-                <div>Chậu: {selectedBase.name}</div>
-                <div>Cây: {selectedPlant.name}</div>
-                <div>Sỏi: {selectedTopping.name}</div>
+            {currentStep === 3 && (
+              <div className="mb-24 rounded-xl border border-stone-200 bg-stone-50 p-4">
+                <div className="font-serif text-lg text-stone-900">Tóm tắt lựa chọn</div>
+                <div className="mt-2 text-sm text-stone-700">
+                  <div>Chậu: {selectedBase.name}</div>
+                  <div>Cây: {selectedPlant.name}</div>
+                  <div>Sỏi: {selectedTopping.name}</div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="sticky bottom-0 border-t border-stone-200 bg-white">
             <div className="mx-auto flex max-w-2xl items-center gap-3 px-6 py-6 md:px-8">
