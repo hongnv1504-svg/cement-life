@@ -146,6 +146,7 @@ export default function ConfiguratorPage() {
     topping: OptionItem;
     total: number;
     preview_image: string;
+    creation_name?: string;
   };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -344,7 +345,7 @@ export default function ConfiguratorPage() {
 
             {currentStep === 4 && (
               <div className="mb-24">
-                <div className="mb-3 font-serif text-xl text-stone-900">Bước Cuối Cùng: Đặt Tên Tác Phẩm!</div>
+                <div className="mb-3 font-serif text-xl text-stone-900">Đặt Tên Riêng Cho Chậu Cây Của Bạn!</div>
                 <div className="grid gap-4">
                   <input
                     type="text"
@@ -354,7 +355,7 @@ export default function ConfiguratorPage() {
                     className="w-full rounded-lg border border-stone-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-stone-800"
                   />
                   <div className="text-xs text-stone-600">
-                    (Tên này sẽ được ghi lên Thẻ Gắn Kèm để đánh dấu tác phẩm sáng tạo của riêng bạn.)
+                    (Tên này sẽ được in trang trọng lên Giấy Khai Sinh của chậu cây, kèm theo một vài dòng hướng dẫn chăm sóc cơ bản.)
                   </div>
                   <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
                     <div className="mb-2 text-center text-lg font-semibold text-stone-900">
@@ -460,11 +461,21 @@ export default function ConfiguratorPage() {
                   </button>
                   <button
                     onClick={() => {
+                      const item: CartItem = {
+                        base: selectedBase,
+                        plant: selectedPlant,
+                        topping: selectedTopping,
+                        total: totalPrice,
+                        preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                        creation_name: creationName,
+                      };
+                      setCart((prev) => [...prev, item]);
+                      setIsCartOpen(false);
                       setIsCheckoutModalOpen(true);
                     }}
                     className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
                   >
-                    Hoàn tất Thiết kế (Chuyển sang Thanh toán)
+                    Hoàn tất & Thanh toán →
                   </button>
                 </>
               )}
