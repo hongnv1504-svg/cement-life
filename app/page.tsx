@@ -149,6 +149,9 @@ export default function ConfiguratorPage() {
   };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const handleRemoveItem = (index: number) => {
+    setCart((prev) => prev.filter((_, i) => i !== index));
+  };
   type RawLocation = {
     id?: string | number;
     ID?: string | number;
@@ -460,7 +463,16 @@ export default function ConfiguratorPage() {
                           <div>{ci.topping.name}</div>
                         </div>
                       </div>
-                      <div className="text-sm font-medium text-stone-900">{formatVND(ci.total)}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-medium text-stone-900">{formatVND(ci.total)}</div>
+                        <button
+                          aria-label="Xóa"
+                          onClick={() => handleRemoveItem(idx)}
+                          className="rounded-md border border-stone-300 px-2 py-1 text-xs text-stone-700 hover:bg-stone-100"
+                        >
+                          Xóa
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
