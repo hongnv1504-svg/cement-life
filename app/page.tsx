@@ -247,7 +247,7 @@ export default function ConfiguratorPage() {
               {formatVND(totalPrice)}
             </div>
             <div className="mt-4 rounded-xl border border-dashed border-green-300 bg-green-50 p-4 text-center text-sm text-green-800">
-              🎁 Quà tặng kèm (Free): 1 Bịch đất (300g) + 1 Xẻng mini + 1 Bình tưới nhỏ
+              🎁 Quà tặng kèm: 1 Bịch đất (300g) + 1 Xẻng mini + 1 Bình tưới nhỏ
             </div>
           </div>
         </div>
@@ -684,8 +684,8 @@ export default function ConfiguratorPage() {
                   {paymentMethod === "BANK_TRANSFER" && (
                     <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-800">
                       <div className="font-medium text-stone-900">Thông tin chuyển khoản (Techcombank)</div>
-                      <div>Ngân hàng: Techcombank </div>
-                      <div>Chủ tài khoản: NGO VAN HONG/div>
+                      <div>Ngân hàng: Techcombank</div>
+                      <div>Chủ tài khoản: NGO VAN HONG</div>
                       <div>Số tài khoản: 19033210412014</div>
                       <div>Chi nhánh: TP. Hồ Chí Minh</div>
                       <div className="mt-2 text-stone-600">
