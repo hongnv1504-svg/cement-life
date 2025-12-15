@@ -131,7 +131,14 @@ export default function ConfiguratorPage() {
     () => selectedBase.price + selectedPlant.price + selectedTopping.price,
     [selectedBase, selectedPlant, selectedTopping]
   );
-  const previewSrc = `/${selectedBase.id}-${selectedPlant.id}.jpg`;
+  const previewSrc =
+    currentStep === 1
+      ? `/${selectedBase.id}.jpg`
+      : `/${selectedBase.id}-${selectedPlant.id}.jpg`;
+  const previewAlt =
+    currentStep === 1
+      ? `${selectedBase.name}`
+      : `${selectedBase.name} + ${selectedPlant.name}`;
   const stepCircle = (n: number) =>
     "flex h-6 w-6 items-center justify-center rounded-full border " +
     (n === currentStep
@@ -147,7 +154,7 @@ export default function ConfiguratorPage() {
           <div className="mx-auto max-w-2xl p-6 md:p-8 lg:p-10">
             <img
               src={previewSrc}
-              alt={`${selectedBase.name} + ${selectedPlant.name}`}
+              alt={previewAlt}
               className="w-full rounded-2xl border border-stone-200 object-cover"
             />
             <div className="mt-4 text-center text-sm text-stone-600">
