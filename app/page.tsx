@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { formatVND } from "@/lib/currency";
 
 type OptionItem = {
   id: string;
@@ -19,21 +20,21 @@ const mockData: {
     {
       id: "cube",
       name: "Cube",
-      price: 80,
+      price: 25000,
       description: "Balanced form with crisp edges and grounded presence.",
       image: "/cube.jpg",
     },
     {
       id: "cylinder",
       name: "Cylinder",
-      price: 90,
+      price: 30000,
       description: "Softly rounded silhouette with timeless appeal.",
       image: "/cylinder.jpg",
     },
     {
       id: "hexagon",
       name: "Hexagon",
-      price: 95,
+      price: 35000,
       description: "Facet-rich geometry with artisan precision.",
       image: "/hexagon.jpg",
     },
@@ -42,21 +43,21 @@ const mockData: {
     {
       id: "mongrong",
       name: "Móng rồng (Haworthia)",
-      price: 25,
+      price: 25000,
       description: "Ít nước, ánh sáng vừa. Dễ chăm.",
       image: "/thumb-mongrong.jpg",
     },
     {
       id: "xuongrong",
       name: "Xương rồng (Cactus)",
-      price: 30,
+      price: 20000,
       description: "Ít nước, nhiều sáng. Khoẻ mạnh.",
       image: "/thumb-xuongrong.jpg",
     },
     {
       id: "senda",
       name: "Sen đá (Succulent)",
-      price: 20,
+      price: 22000,
       description: "Ít nước, sáng tốt. Thanh lịch.",
       image: "/thumb-senda.jpg",
     },
@@ -65,14 +66,14 @@ const mockData: {
     {
       id: "soitrang",
       name: "Sỏi trắng",
-      price: 5,
+      price: 7000,
       description: "Sạch, sáng, tạo cảm giác tinh khiết.",
       image: "/thumb-soitrang.jpg",
     },
     {
       id: "soitunhien",
       name: "Sỏi tự nhiên",
-      price: 5,
+      price: 7000,
       description: "Tự nhiên, gần gũi, gam màu ấm.",
       image: "/thumb-soitunhien.jpg",
     },
@@ -112,7 +113,7 @@ function OptionCard({
             <span className="mt-1 text-xs text-gray-500">{item.description}</span>
           ) : null}
         </div>
-        <span className="text-sm text-stone-700">+ ${item.price}</span>
+        <span className="text-sm text-stone-700">+ {formatVND(item.price)}</span>
       </div>
     </button>
   );
@@ -243,7 +244,7 @@ export default function ConfiguratorPage() {
               Nền bởi Nghệ nhân. Hoàn thiện bởi Bạn.
             </div>
             <div className="mt-6 text-center font-serif text-3xl tracking-tight text-stone-900 md:text-4xl">
-              ${totalPrice}
+              {formatVND(totalPrice)}
             </div>
             <div className="mt-4 rounded-xl border border-dashed border-green-300 bg-green-50 p-4 text-center text-sm text-green-800">
               🎁 Quà tặng kèm (Free): 1 Bịch đất (300g) + 1 Xẻng mini + 1 Bình tưới nhỏ
@@ -379,26 +380,45 @@ export default function ConfiguratorPage() {
                   >
                     ← Quay lại
                   </button>
-                  <button
-                    onClick={() => {
-                      const item: CartItem = {
-                        base: selectedBase,
-                        plant: selectedPlant,
-                        topping: selectedTopping,
-                        total: totalPrice,
-                        preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                      };
-                      setCart((prev) => [...prev, item]);
-                      alert("Đã thêm vào giỏ hàng thành công!");
-                      setCurrentStep(1);
-                      setSelectedBase(mockData.bases[0]);
-                      setSelectedPlant(mockData.plants[0]);
-                      setSelectedTopping(mockData.toppings[0]);
-                    }}
-                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
-                  >
-                    Coi thêm chậu
-                  </button>
+                  <div className="flex w-full items-center gap-4">
+                    <button
+                      onClick={() => {
+                        const item: CartItem = {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                        };
+                        setCart((prev) => [...prev, item]);
+                        alert("Đã thêm vào giỏ hàng thành công!");
+                        setCurrentStep(1);
+                        setSelectedBase(mockData.bases[0]);
+                        setSelectedPlant(mockData.plants[0]);
+                        setSelectedTopping(mockData.toppings[0]);
+                      }}
+                      className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
+                    >
+                      Coi thêm chậu
+                    </button>
+                    <button
+                      onClick={() => {
+                        const item: CartItem = {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                        };
+                        setCart((prev) => [...prev, item]);
+                        setIsCartOpen(false);
+                        setIsCheckoutModalOpen(true);
+                      }}
+                      className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                    >
+                      Tính tiền
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -440,7 +460,7 @@ export default function ConfiguratorPage() {
                           <div>{ci.topping.name}</div>
                         </div>
                       </div>
-                      <div className="text-sm font-medium text-stone-900">${ci.total}</div>
+                      <div className="text-sm font-medium text-stone-900">{formatVND(ci.total)}</div>
                     </div>
                   ))}
                 </div>
@@ -448,8 +468,7 @@ export default function ConfiguratorPage() {
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="text-stone-800">
-                Tổng cộng: $
-                {cart.reduce((sum, c) => sum + c.total, 0)}
+                Tổng cộng: {formatVND(cart.reduce((sum, c) => sum + c.total, 0))}
               </div>
               <div className="flex gap-2">
                 <button
@@ -483,7 +502,7 @@ export default function ConfiguratorPage() {
               Finalize Your Order
             </div>
             <div className="mb-4 text-center text-stone-700">
-              Tổng tiền: ${totalPrice}
+              Tổng tiền: {formatVND(totalPrice)}
             </div>
             <form
               onSubmit={async (e) => {
