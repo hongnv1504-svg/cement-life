@@ -345,25 +345,23 @@ export default function ConfiguratorPage() {
 
             {currentStep === 4 && (
               <div className="mb-24">
-                <div className="mb-3 font-serif text-xl text-stone-900">Đặt Tên Riêng Cho Chậu Cây Của Bạn!</div>
+                <div className="mb-3 font-serif text-xl text-stone-900">Đặt tên cho chậu cây</div>
                 <div className="grid gap-4">
                   <input
                     type="text"
-                    placeholder="Tên gọi yêu thích của bạn là gì? (Ví dụ: Sen Đá Vũ Trụ, Vườn Trên Bàn)"
+                    placeholder="Một cái tên dành riêng cho nó."
                     value={creationName}
                     onChange={(e) => setCreationName(e.target.value)}
                     className="w-full rounded-lg border border-stone-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-stone-800"
                   />
-                  <div className="text-xs text-stone-600">
-                    (Tên này sẽ được in trang trọng lên Giấy Khai Sinh của chậu cây, kèm theo một vài dòng hướng dẫn chăm sóc cơ bản.)
-                  </div>
                   <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
                     <div className="mb-2 text-center text-lg font-semibold text-stone-900">
                       {creationName || "Tên tác phẩm của bạn"}
                     </div>
                     <div className="mb-2 text-center text-sm text-stone-700">
-                      {`Tuyệt vời! ${selectedBase.name} tinh tế, mang tên '${creationName || "..." }', đã sẵn sàng để trở thành của bạn.`}
+                      {`${creationName || "..."} , đã sẵn sàng.`}
                     </div>
+                    <div className="mb-2 text-center text-sm text-stone-700">Chậu cây của bạn</div>
                     <img
                       src={`/${selectedBase.id}-${selectedPlant.id}.jpg`}
                       alt={`${selectedBase.name} + ${selectedPlant.name}`}
