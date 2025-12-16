@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { formatVND } from "@/lib/currency";
 
@@ -148,14 +148,38 @@ export default function ConfiguratorPage() {
     preview_image: string;
     creation_name?: string;
   };
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem("cement-life-cart");
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as CartItem[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [creationName, setCreationName] = useState("");
   const [showLanding, setShowLanding] = useState(true);
   const [isOpeningCheckout, setIsOpeningCheckout] = useState(false);
+  const [checkoutItems, setCheckoutItems] = useState<CartItem[] | null>(null);
   const handleRemoveItem = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
+  const openCheckoutModal = (items?: CartItem[]) => {
+    if (isOpeningCheckout) return;
+    setIsOpeningCheckout(true);
+    setIsCartOpen(false);
+    setCheckoutItems(items && items.length > 0 ? items : null);
+    setIsCheckoutModalOpen(true);
+  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("cement-life-cart", JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
   type RawLocation = {
     id?: string | number;
     ID?: string | number;
@@ -229,6 +253,10 @@ export default function ConfiguratorPage() {
     currentStep === 1
       ? `${selectedBase.name}`
       : `${selectedBase.name} + ${selectedPlant.name}`;
+  const checkoutTotal =
+    checkoutItems && checkoutItems.length > 0
+      ? checkoutItems.reduce((sum, i) => sum + i.total, 0)
+      : totalPrice;
   const stepCircle = (n: number) =>
     "flex h-6 w-6 items-center justify-center rounded-full border " +
     (n === currentStep
@@ -490,9 +518,18 @@ export default function ConfiguratorPage() {
                     <button
                       onClick={() => {
                         if (isOpeningCheckout) return;
-                        setIsOpeningCheckout(true);
-                        setIsCartOpen(false);
-                        setIsCheckoutModalOpen(true);
+                        const item: CartItem = {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image:
+                            `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                          creation_name: creationName,
+                        };
+                        const newCart = [...cart, item];
+                        setCart(newCart);
+                        openCheckoutModal(newCart);
                       }}
                       disabled={isOpeningCheckout}
                       className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800 disabled:opacity-60"
@@ -561,10 +598,7 @@ export default function ConfiguratorPage() {
                 Tổng cộng: {formatVND(cart.reduce((sum, c) => sum + c.total, 0))}
               </div>
               <button
-                onClick={() => {
-                  setIsCartOpen(false);
-                  setIsCheckoutModalOpen(true);
-                }}
+                onClick={() => openCheckoutModal(cart)}
                 className="rounded-full bg-black px-4 py-2 text-white transition hover:bg-stone-800"
               >
                 Tính tiền
@@ -575,16 +609,22 @@ export default function ConfiguratorPage() {
       )}
       {isCheckoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => !submitting && setIsCheckoutModalOpen(false)}
+            <div
+              className="absolute inset-0 bg-black/40"
+            onClick={() => {
+              if (!submitting) {
+                setIsCheckoutModalOpen(false);
+                setIsOpeningCheckout(false);
+                setCheckoutItems(null);
+              }
+            }}
           />
           <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-4 text-center font-serif text-xl text-stone-900">
               Hoàn tất Đơn hàng
             </div>
             <div className="mb-4 text-center text-stone-700">
-              Tổng tiền: {formatVND(totalPrice)}
+              Tổng tiền: {formatVND(checkoutTotal)}
             </div>
             <form
               onSubmit={async (e) => {
@@ -606,7 +646,7 @@ export default function ConfiguratorPage() {
                   return;
                 }
                 setSubmitting(true);
-                const orderDetails = {
+                const singleDetails = {
                   base: { id: selectedBase.id, name: selectedBase.name, price: selectedBase.price },
                   plant: { id: selectedPlant.id, name: selectedPlant.name, price: selectedPlant.price },
                   topping: { id: selectedTopping.id, name: selectedTopping.name, price: selectedTopping.price },
@@ -614,9 +654,24 @@ export default function ConfiguratorPage() {
                     currentStep === 1
                       ? `/${selectedBase.id}.jpg`
                       : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                  payment_method: paymentMethod,
                   creation_name: creationName,
                 };
+                const orderDetails =
+                  checkoutItems && checkoutItems.length > 0
+                    ? {
+                        items: checkoutItems.map((ci) => ({
+                          base: { id: ci.base.id, name: ci.base.name, price: ci.base.price },
+                          plant: { id: ci.plant.id, name: ci.plant.name, price: ci.plant.price },
+                          topping: { id: ci.topping.id, name: ci.topping.name, price: ci.topping.price },
+                          preview_image: ci.preview_image,
+                          creation_name: ci.creation_name,
+                        })),
+                        payment_method: paymentMethod,
+                      }
+                    : {
+                        ...singleDetails,
+                        payment_method: paymentMethod,
+                      };
                 const customerAddress = `${specificAddress}, ${wardName}, ${districtName}, ${provinceName}`;
                 const { data, error } = await supabase
                   .from("orders")
@@ -625,7 +680,7 @@ export default function ConfiguratorPage() {
                     customer_email: customerEmail,
                     customer_phone: customerPhone,
                     customer_address: customerAddress,
-                    total_amount: totalPrice,
+                    total_amount: checkoutTotal,
                     order_details: orderDetails,
                     status: "PENDING",
                   })
@@ -784,7 +839,11 @@ export default function ConfiguratorPage() {
                 <button
                   type="button"
                   disabled={submitting}
-                  onClick={() => setIsCheckoutModalOpen(false)}
+                  onClick={() => {
+                    setIsCheckoutModalOpen(false);
+                    setIsOpeningCheckout(false);
+                    setCheckoutItems(null);
+                  }}
                   className="w-full rounded-full border border-stone-300 bg-white py-3 text-black transition hover:bg-stone-100 disabled:opacity-60"
                 >
                   Hủy
