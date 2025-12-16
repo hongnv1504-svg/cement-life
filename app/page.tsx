@@ -152,6 +152,7 @@ export default function ConfiguratorPage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [creationName, setCreationName] = useState("");
   const [showLanding, setShowLanding] = useState(true);
+  const [isOpeningCheckout, setIsOpeningCheckout] = useState(false);
   const handleRemoveItem = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
@@ -488,10 +489,13 @@ export default function ConfiguratorPage() {
                     </button>
                     <button
                       onClick={() => {
+                        if (isOpeningCheckout) return;
+                        setIsOpeningCheckout(true);
                         setIsCartOpen(false);
                         setIsCheckoutModalOpen(true);
                       }}
-                      className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                      disabled={isOpeningCheckout}
+                      className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800 disabled:opacity-60"
                     >
                       Tính tiền →
                     </button>
@@ -585,6 +589,7 @@ export default function ConfiguratorPage() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
+                if (submitting) return;
                 const provinceName = provinces.find((p) => p.id == selectedProvinceId)?.name;
                 const districtName = districts.find((d) => d.id == selectedDistrictId)?.name;
                 const wardName = wards.find((w) => w.id == selectedWardId)?.name;
@@ -630,6 +635,7 @@ export default function ConfiguratorPage() {
                   alert(`Đặt hàng thất bại: ${error.message}`);
                   return;
                 }
+                setIsOpeningCheckout(false);
                 const id =
                   Array.isArray(data) && data.length > 0
                     ? (data[0] as { id?: number | string }).id
