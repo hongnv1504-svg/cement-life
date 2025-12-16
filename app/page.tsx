@@ -463,24 +463,48 @@ export default function ConfiguratorPage() {
                   >
                     ← Quay lại
                   </button>
-                  <button
-                    onClick={() => {
-                      const item: CartItem = {
-                        base: selectedBase,
-                        plant: selectedPlant,
-                        topping: selectedTopping,
-                        total: totalPrice,
-                        preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                        creation_name: creationName,
-                      };
-                      setCart((prev) => [...prev, item]);
-                      setIsCartOpen(false);
-                      setIsCheckoutModalOpen(true);
-                    }}
-                    className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
-                  >
-                    Tính tiền →
-                  </button>
+                  <div className="flex w-full items-center gap-4">
+                    <button
+                      onClick={() => {
+                        const item: CartItem = {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                          creation_name: creationName,
+                        };
+                        setCart((prev) => [...prev, item]);
+                        alert(`Đã thêm ${creationName || "tác phẩm"} vào giỏ hàng!`);
+                        setSelectedBase(mockData.bases[0]);
+                        setSelectedPlant(mockData.plants[0]);
+                        setSelectedTopping(mockData.toppings[0]);
+                        setCreationName("");
+                        setCurrentStep(1);
+                      }}
+                      className="w-full rounded-full border border-stone-300 bg-white py-4 text-black transition hover:bg-stone-100"
+                    >
+                      Thêm vào giỏ
+                    </button>
+                    <button
+                      onClick={() => {
+                        const item: CartItem = {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                          creation_name: creationName,
+                        };
+                        setCart((prev) => [...prev, item]);
+                        setIsCartOpen(false);
+                        setIsCheckoutModalOpen(true);
+                      }}
+                      className="w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800"
+                    >
+                      Tính tiền →
+                    </button>
+                  </div>
                 </>
               )}
             </div>
