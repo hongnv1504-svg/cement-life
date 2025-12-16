@@ -488,15 +488,6 @@ export default function ConfiguratorPage() {
                     </button>
                     <button
                       onClick={() => {
-                        const item: CartItem = {
-                          base: selectedBase,
-                          plant: selectedPlant,
-                          topping: selectedTopping,
-                          total: totalPrice,
-                          preview_image: `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                          creation_name: creationName,
-                        };
-                        setCart((prev) => [...prev, item]);
                         setIsCartOpen(false);
                         setIsCheckoutModalOpen(true);
                       }}
