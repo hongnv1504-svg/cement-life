@@ -646,32 +646,38 @@ export default function ConfiguratorPage() {
                   return;
                 }
                 setSubmitting(true);
-                const singleDetails = {
-                  base: { id: selectedBase.id, name: selectedBase.name, price: selectedBase.price },
-                  plant: { id: selectedPlant.id, name: selectedPlant.name, price: selectedPlant.price },
-                  topping: { id: selectedTopping.id, name: selectedTopping.name, price: selectedTopping.price },
-                  preview_image:
-                    currentStep === 1
-                      ? `/${selectedBase.id}.jpg`
-                      : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
-                  creation_name: creationName,
-                };
-                const orderDetails =
+
+                // Standardize items list
+                const itemsToSubmit =
                   checkoutItems && checkoutItems.length > 0
-                    ? {
-                        items: checkoutItems.map((ci) => ({
-                          base: { id: ci.base.id, name: ci.base.name, price: ci.base.price },
-                          plant: { id: ci.plant.id, name: ci.plant.name, price: ci.plant.price },
-                          topping: { id: ci.topping.id, name: ci.topping.name, price: ci.topping.price },
-                          preview_image: ci.preview_image,
-                          creation_name: ci.creation_name,
-                        })),
-                        payment_method: paymentMethod,
-                      }
-                    : {
-                        ...singleDetails,
-                        payment_method: paymentMethod,
-                      };
+                    ? checkoutItems
+                    : [
+                        {
+                          base: selectedBase,
+                          plant: selectedPlant,
+                          topping: selectedTopping,
+                          total: totalPrice,
+                          preview_image:
+                            currentStep === 1
+                              ? `/${selectedBase.id}.jpg`
+                              : `/${selectedBase.id}-${selectedPlant.id}.jpg`,
+                          creation_name: creationName,
+                        },
+                      ];
+
+                // Map to strict JSON format
+                const formattedItems = itemsToSubmit.map((item) => ({
+                  customerName: item.creation_name || "Chưa đặt tên",
+                  base: { name: item.base.name, price: item.base.price },
+                  plant: { name: item.plant.name, price: item.plant.price },
+                  soil: { name: item.topping.name, price: item.topping.price },
+                  totalItemPrice: item.total,
+                }));
+
+                const orderDetails = {
+                  items: formattedItems,
+                };
+
                 const customerAddress = `${specificAddress}, ${wardName}, ${districtName}, ${provinceName}`;
                 const { data, error } = await supabase
                   .from("orders")
@@ -681,6 +687,7 @@ export default function ConfiguratorPage() {
                     customer_phone: customerPhone,
                     customer_address: customerAddress,
                     total_amount: checkoutTotal,
+                    payment_method: paymentMethod,
                     order_details: orderDetails,
                     status: "PENDING",
                   })
