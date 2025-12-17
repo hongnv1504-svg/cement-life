@@ -691,6 +691,7 @@ export default function ConfiguratorPage() {
                   return;
                 }
                 setIsOpeningCheckout(false);
+                setCart([]);
                 const id =
                   Array.isArray(data) && data.length > 0
                     ? (data[0] as { id?: number | string }).id
